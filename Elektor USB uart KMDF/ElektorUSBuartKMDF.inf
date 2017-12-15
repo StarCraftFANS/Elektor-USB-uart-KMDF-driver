@@ -1,0 +1,87 @@
+;
+; ElektorUSBuartKMDF.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=USBDevice
+ClassGuid={88BAE032-5A81-49f0-BC3D-A4FF138216D6}
+Provider=%DriverManufacturerName%
+CatalogFile=ElektorUSBuartKMDF.cat
+DriverVer=
+
+[DestinationDirs]
+DefaultDestDir = 12
+ElektorUSBuartKMDF_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ElektorUSBuartKMDF.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ElektorUSBuartKMDF.DeviceDesc%=ElektorUSBuartKMDF_Device, USB\VID_0C7D&PID_0001
+
+[ElektorUSBuartKMDF_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ElektorUSBuartKMDF.sys
+
+[ElektorUSBuartKMDF_Device.NT.HW]
+AddReg=ElektorUSBuartKMDF_AddReg
+
+[ElektorUSBuartKMDF_AddReg]
+; By default, USBDevice class uses iProduct descriptor to name the device in
+; Device Manager on Windows 8 and higher.
+; Uncomment for this device to use %DeviceName% on Windows 8 and higher:
+;HKR,,FriendlyName,,%ElektorUSBuartKMDF.DeviceDesc%
+
+;-------------- Service installation
+[ElektorUSBuartKMDF_Device.NT.Services]
+AddService = ElektorUSBuartKMDF,%SPSVCINST_ASSOCSERVICE%, ElektorUSBuartKMDF_Service_Inst
+
+; -------------- ElektorUSBuartKMDF driver install sections
+[ElektorUSBuartKMDF_Service_Inst]
+DisplayName    = %ElektorUSBuartKMDF.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ElektorUSBuartKMDF.sys
+
+;
+;--- ElektorUSBuartKMDF_Device Coinstaller installation ------
+;
+
+[ElektorUSBuartKMDF_Device.NT.CoInstallers]
+AddReg=ElektorUSBuartKMDF_Device_CoInstaller_AddReg
+CopyFiles=ElektorUSBuartKMDF_Device_CoInstaller_CopyFiles
+
+[ElektorUSBuartKMDF_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ElektorUSBuartKMDF_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[ElektorUSBuartKMDF_Device.NT.Wdf]
+KmdfService =  ElektorUSBuartKMDF, ElektorUSBuartKMDF_wdfsect
+[ElektorUSBuartKMDF_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="Elektor"
+DriverManufacturerName="Erik Agterdenbos"
+DiskName = "Elektor USB uart Installation Disk"
+ElektorUSBuartKMDF.DeviceDesc = "Elektor USB uart"
+ElektorUSBuartKMDF.SVCDESC = "Elektor USB uart Service"
+REG_MULTI_SZ = 0x00010000
